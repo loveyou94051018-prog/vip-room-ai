@@ -344,10 +344,45 @@ function copyResult(){navigator.clipboard.writeText(lastResultText);alert("已�
 function resetAll(){document.getElementById("resultPage").classList.add("hidden");window.scrollTo({top:0,behavior:"smooth"})}
 function updateMember(){
   const p=new URLSearchParams(location.search); const exp=p.get("exp");
-  if(exp){let left=Math.max(0,Number(exp)-Date.now());let h=String(Math.floor(left/3600000)).padStart(2,"0"),m=String(Math.floor(left%3600000/60000)).padStart(2,"0"),s=String(Math.floor(left%60000/1000)).padStart(2,"0");document.getElementById("remain").innerText=`${h}:${m}:${s}`;document.getElementById("expireText").innerText=new Date(Number(exp)).toLocaleTimeString("zh-TW")}
+  if(exp){let left=Number(exp)-Date.now(); if(left<=0){document.documentElement.innerHTML=''; location.reload(); return;} left=Math.max(0,left);let h=String(Math.floor(left/3600000)).padStart(2,"0"),m=String(Math.floor(left%3600000/60000)).padStart(2,"0"),s=String(Math.floor(left%60000/1000)).padStart(2,"0");document.getElementById("remain").innerText=`${h}:${m}:${s}`;document.getElementById("expireText").innerText=new Date(Number(exp)).toLocaleTimeString("zh-TW")}
 }
 document.getElementById("device").value=deviceCode();
 setInterval(updateMember,1000); updateMember();
 </script>
+
+<script>
+(function forceExpireLock(){
+  function showExpiredScreen(){
+    document.documentElement.innerHTML = `
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>會員時效已到期</title>
+      </head>
+      <body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at top,#250501,#030000 70%);color:white;font-family:'Microsoft JhengHei',Arial;padding:24px;text-align:center">
+        <div style="max-width:560px;width:100%;background:#120402;border:1px solid #ff1f16;border-radius:18px;padding:36px;box-shadow:0 0 30px rgba(255,31,22,.35)">
+          <h1 style="color:#ff1f16;margin:0 0 18px;font-size:34px">會員時效已到期</h1>
+          <p style="font-size:20px;color:#eee;line-height:1.8">此會員連結已失效，無法繼續使用。</p>
+          <p style="color:#ffd36a;font-weight:900;font-size:22px">請聯繫冥界高級VIP重新開通</p>
+        </div>
+      </body>`;
+  }
+
+  function checkExpire(){
+    const exp = new URLSearchParams(location.search).get("exp");
+    if (!exp) return;
+    const left = Number(exp) - Date.now();
+    if (left <= 0) {
+      showExpiredScreen();
+      return;
+    }
+    setTimeout(showExpiredScreen, Math.min(left + 300, 2147483647));
+  }
+
+  checkExpire();
+  setInterval(checkExpire, 1000);
+})();
+</script>
+
 </body>
 </html>
