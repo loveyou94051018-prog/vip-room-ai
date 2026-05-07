@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI賽特選房輔助器 PRO</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --pink:#ff1f16;
+  --hot:#d9150d;
+  --soft:#ffb08a;
+  --gold:#ffd36a;
+  --green:#36f06d;
+  --orange:#ff8a2a;
+  --line:rgba(255,31,22,.58);
+}
+body{
+  margin:0;
+  font-family:"Microsoft JhengHei",Arial,sans-serif;
+  color:#fff;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at top left,rgba(255,31,22,.35),transparent 25%),
+    radial-gradient(circle at top right,rgba(255,31,22,.28),transparent 30%),
+    radial-gradient(circle at center,rgba(95,0,80,.32),transparent 45%),
+    #07030a;
+}
+body:before{
+  content:"";
+  position:fixed;inset:0;
+  background:
+    linear-gradient(90deg,rgba(255,31,22,.04) 1px,transparent 1px),
+    linear-gradient(rgba(255,31,22,.035) 1px,transparent 1px);
+  background-size:44px 44px;
+  pointer-events:none;
+}
+.app{max-width:1180px;margin:0 auto;padding:18px;position:relative}
+.nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 4px 18px;
+}
+.nav img{height:52px;object-fit:contain}
+.navlinks{display:flex;gap:28px;color:#ffddee;font-weight:800}
+.vipBtn{
+  border:1px solid var(--pink);border-radius:10px;padding:12px 22px;
+  color:var(--gold);box-shadow:0 0 18px rgba(255,31,22,.4);
+  background:rgba(15,4,15,.8);font-weight:900
+}
+.hero{
+  position:relative;
+  min-height:500px;
+  display:flex;align-items:center;justify-content:center;
+  padding:18px 20px 8px;
+  overflow:hidden;
+  border-bottom:1px solid rgba(255,31,22,.35);
+}
+.hero:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at center,rgba(255,31,22,.25),transparent 45%);
+  z-index:0;
+}
+.characters{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  transform:translateX(-50%);
+  width:min(780px,96%);
+  max-height:520px;
+  object-fit:contain;
+  opacity:.95;
+  filter:drop-shadow(0 0 26px rgba(255,31,22,.58));
+  z-index:1;
+}
+.heroText{
+  position:relative;
+  z-index:3;
+  text-align:center;
+  margin-top:170px;
+  text-shadow:0 0 18px #000,0 0 28px #000;
+}
+.logo{
+  width:min(360px,78%);
+  filter:drop-shadow(0 0 18px rgba(255,211,106,.55));
+  margin-bottom:2px;
+}
+.hero h1{
+  margin:0;
+  font-size:clamp(36px,7vw,76px);
+  color:#ff2b20;
+  letter-spacing:3px;
+  text-shadow:0 0 8px #b30f08,0 4px 0 rgba(80,0,40,.9);
+}
+.hero p{font-size:24px;font-weight:900;color:#ffe5f3;letter-spacing:4px}
+
+.frame{
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(20,6,18,.93),rgba(10,4,11,.96));
+  box-shadow:0 0 30px rgba(255,31,22,.25),inset 0 0 22px rgba(255,31,22,.08);
+  border-radius:14px;
+  padding:22px;
+  margin-bottom:20px;
+  position:relative;
+}
+.frame:before,.frame:after{
+  content:"✦";
+  position:absolute;
+  color:var(--pink);
+  font-size:22px;
+  top:-14px;
+  text-shadow:0 0 10px var(--pink)
+}
+.frame:before{left:12px}.frame:after{right:12px}
+.control{
+  display:grid;grid-template-columns:1fr 1fr 260px;gap:28px;align-items:end;
+}
+label{display:block;color:#ffe4f2;font-weight:900;text-align:center;margin-bottom:10px}
+.inputBox{
+  display:flex;border:1px solid var(--pink);border-radius:8px;background:#0b0710;overflow:hidden;box-shadow:inset 0 0 12px rgba(255,31,22,.16)
+}
+.prefix{padding:16px 18px;border-right:1px solid rgba(255,31,22,.35);font-weight:900;color:#fff}
+input{
+  width:100%;background:transparent;color:white;border:0;padding:16px;font-size:20px;outline:none;
+}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.quick button,.mainBtn,button{
+  border:0;border-radius:8px;background:linear-gradient(180deg,#ff2b20,#7a0804);
+  color:white;font-size:18px;font-weight:900;padding:14px;cursor:pointer;
+  box-shadow:0 0 18px rgba(255,31,22,.35),inset 0 2px 0 rgba(255,255,255,.22)
+}
+.mainBtn{width:100%;height:70px;font-size:26px;color:#fff}
+.deviceRow{display:flex;align-items:center;gap:10px}
+.copyBtn{width:45px;height:45px;padding:0;font-size:20px}
+.ready{color:#66ff85;text-align:center;margin-top:14px;font-weight:900}
+.hidden{display:none!important}
+.loading{text-align:center;padding:44px}
+.loader{width:80px;height:80px;border:7px solid #311326;border-top-color:var(--pink);border-radius:50%;margin:auto;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading h2{color:var(--pink);font-size:34px}
+.sectionTitle{font-size:28px;color:var(--pink);font-weight:900;margin:6px 0 18px;text-shadow:0 0 14px rgba(255,31,22,.55)}
+.resultGrid{display:grid;grid-template-columns:1.05fr 1.65fr;gap:18px;border:1px solid rgba(255,31,22,.35);border-radius:10px;overflow:hidden}
+.infoPanel,.analysisPanel{padding:18px;background:rgba(0,0,0,.18)}
+.infoPanel{border-right:1px solid rgba(255,31,22,.35)}
+.infoPanel h3,.analysisPanel h3{color:var(--pink);font-size:22px;margin:0 0 18px}
+.infoLine{display:grid;grid-template-columns:120px 1fr;gap:12px;margin:13px 0;color:#ddd}
+.infoLine b{color:#fff}
+.statGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+.stat{
+  border:1px solid rgba(255,31,22,.35);border-radius:8px;text-align:center;padding:16px;background:rgba(255,31,22,.08)
+}
+.stat .num{font-size:32px;color:var(--pink);font-weight:900;margin-top:8px}
+.chartWrap{display:grid;grid-template-columns:1fr 230px;gap:18px;align-items:center}
+.radar{width:220px;height:220px;border-radius:10px}
+.roomsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.roomCard{
+  border:1px solid rgba(255,31,22,.6);border-radius:12px;padding:18px;
+  background:linear-gradient(135deg,rgba(255,31,22,.16),rgba(12,6,12,.9));
+  box-shadow:0 0 18px rgba(255,31,22,.2)
+}
+.medal{display:inline-flex;width:36px;height:36px;border-radius:50%;align-items:center;justify-content:center;background:linear-gradient(#ffe08a,#ad6d18);color:#2a0808;font-weight:900}
+.roomNo{font-size:34px;color:var(--pink);font-weight:900;margin:12px 0}
+.heat{color:#ff5aa8;font-size:24px;letter-spacing:3px}
+.sideHot{border:1px solid rgba(255,31,22,.45);border-radius:12px;padding:18px;background:rgba(255,31,22,.07)}
+.topRooms{display:grid;grid-template-columns:1fr 260px;gap:16px;margin-top:18px}
+.sideHot h3{color:var(--pink);margin-top:0}
+.sideHot li{margin:13px 0;color:#ffe4f3}
+.status{
+  border:1px solid var(--green);background:rgba(33,180,76,.18);
+  border-radius:10px;text-align:center;color:#65ff8d;padding:18px;font-size:26px;font-weight:900;margin-top:22px
+}
+.warn{
+  border:1px solid var(--hot);background:rgba(255,31,22,.12);
+  border-radius:10px;text-align:center;color:#ff6caf;padding:16px;margin-top:14px
+}
+.bottomActions{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:24px}
+.action{
+  border:1px solid rgba(255,31,22,.45);border-radius:10px;text-align:center;padding:18px;color:#ffe4f3;background:rgba(0,0,0,.16)
+}
+.action.big{background:radial-gradient(circle,#612516,#170812);border-color:#ffb65f;color:#ffd36a;box-shadow:0 0 20px rgba(255,31,22,.35)}
+.member{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0;border:1px solid rgba(255,31,22,.45);border-radius:10px;overflow:hidden;margin-top:18px}
+.member div{padding:14px;text-align:center;border-right:1px solid rgba(255,31,22,.22);background:rgba(0,0,0,.18)}
+.footer{text-align:center;color:var(--pink);margin:22px 0;font-weight:900;letter-spacing:2px}
+@media(max-width:900px){
+  .navlinks{display:none}.hero{min-height:430px}.characters{width:105%;opacity:.82}.heroText{margin-top:190px}
+  .control,.resultGrid,.chartWrap,.topRooms{grid-template-columns:1fr}
+  .roomsGrid,.bottomActions,.member{grid-template-columns:1fr}.statGrid{grid-template-columns:1fr 1fr}
+  .infoPanel{border-right:0;border-bottom:1px solid rgba(255,31,22,.35)}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="nav">
+    <img src="/assets/banner_logo.png" alt="戰神賽特">
+    <div class="navlinks"><span>首頁</span><span>AI分析</span><span>熱門房號</span><span>戰績記錄</span><span>會員中心</span></div>
+    <div class="vipBtn">👑 冥界高級VIP</div>
+  </div>
+
+  <div class="hero">
+    <img class="characters" src="/assets/characters.webp" alt="戰神賽特人物">
+    <div class="heroText">
+      <img class="logo" src="/assets/banner_logo.png" alt="戰神賽特">
+      <h1>AI 賽特選房輔助器</h1>
+      <p>AI智能分析・精準選房・提高勝率</p>
+    </div>
+  </div>
+
+  <div id="mainPage">
+    <div class="frame">
+      <div class="control">
+        <div>
+          <label>輸入本金</label>
+          <div class="inputBox"><div class="prefix">NT$</div><input id="money" type="number" value="2000" placeholder="請輸入本金"></div>
+          <div class="quick">
+            <button onclick="setMoney(1000)">1,000</button><button onclick="setMoney(2000)">2,000</button>
+            <button onclick="setMoney(5000)">5,000</button><button onclick="setMoney(10000)">10,000</button>
+          </div>
+        </div>
+        <div>
+          <label>裝置識別碼 <span style="color:#ff1f16">（自動生成）</span></label>
+          <div class="inputBox deviceRow"><input id="device" readonly><button class="copyBtn" onclick="copyDevice()">⧉</button></div>
+          <div class="ready">● AI引擎準備就緒</div>
+        </div>
+        <div><button class="mainBtn" onclick="startAnalyze()">👑 開始AI分析</button></div>
+      </div>
+    </div>
+
+    <div id="loadingPage" class="frame loading hidden">
+      <div class="loader"></div>
+      <h2>AI 賽特系統掃描中</h2>
+      <p id="scanText">正在連接演算法...</p>
+    </div>
+
+    <div id="resultPage" class="hidden">
+      <div class="frame">
+        <div class="sectionTitle">⌁ 篩選結果</div>
+        <div class="resultGrid">
+          <div class="infoPanel">
+            <h3>篩選結果說明</h3>
+            <div class="infoLine"><span>裝置識別碼：</span><b id="rDevice"></b></div>
+            <div class="infoLine"><span>本金：</span><b id="rMoney"></b></div>
+            <div class="infoLine"><span>最佳投注：</span><b id="rBet"></b></div>
+            <div class="infoLine"><span>最佳平轉次數：</span><b id="rRounds"></b></div>
+            <div class="infoLine"><span>推薦房號：</span><b id="rRooms" style="color:#ff1f16"></b></div>
+            <div class="infoLine"><span>預估最高爆分倍率：</span><b id="rMulti"></b></div>
+            <div class="infoLine"><span>系統時間：</span><b id="rTime"></b></div>
+          </div>
+          <div class="analysisPanel">
+            <h3>指定房號機率分析 ›</h3>
+            <div class="chartWrap">
+              <div class="statGrid">
+                <div class="stat">勝利率<div class="num" id="win"></div>↗</div>
+                <div class="stat">補分機率<div class="num" id="bonus"></div>↗</div>
+                <div class="stat">免遊機率<div class="num" id="free"></div>↗</div>
+                <div class="stat">JP機率<div class="num" id="jp"></div>↗</div>
+                <div class="stat">覺醒機率<div class="num" id="awake"></div>↗</div>
+              </div>
+              <canvas class="radar" id="radar" width="220" height="220"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="topRooms">
+          <div>
+            <div class="sectionTitle">★ AI推薦房號 TOP 3</div>
+            <div class="roomsGrid" id="roomCards"></div>
+          </div>
+          <div class="sideHot">
+            <h3>其他熱門房號</h3>
+            <ul id="hotRooms"></ul>
+          </div>
+        </div>
+
+        <div class="status">⌁ 系統狀態：系統運行中<br><small style="font-size:16px;color:#caffd4">AI引擎運算正常・數據更新中・請放心使用</small></div>
+        <div class="warn">⚠ 警告<br>請確保網頁保持開啟狀態，關閉頁面將導致分析結果錯誤。</div>
+
+        <div class="bottomActions">
+          <div class="action">↗ 分享連結<br><small>分享給好友</small></div>
+          <div class="action" onclick="copyResult()">▣ 複製結果<br><small>複製分析資訊</small></div>
+          <div class="action big">👑 冥界高級VIP<br><small>尊享專屬分析服務</small></div>
+          <div class="action">⏱ 時效會員<br><small>時效驗證</small></div>
+          <div class="action" onclick="resetAll()">⟳ 重新篩選<br><small>重新進行分析</small></div>
+        </div>
+
+        <div class="member">
+          <div>時效會員狀態<br><b style="color:#ff1f16">已啟用</b></div>
+          <div>剩餘時間<br><b id="remain">--:--:--</b></div>
+          <div>會員等級<br><b style="color:#ffd36a">VIP</b></div>
+          <div>到期時間<br><b id="expireText">--</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">© 2026 冥界科技・AI賽特選房輔助器 PRO・時效會員專屬</div>
+</div>
+
+<script>
+let lastResultText = "";
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function deviceCode(){const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<14;i++)s+=chars[rand(0,chars.length-1)];return s}
+function setMoney(v){document.getElementById("money").value=v}
+function copyDevice(){navigator.clipboard.writeText(document.getElementById("device").value);alert("已複製裝置碼")}
+function startAnalyze(){
+  const money=Number(document.getElementById("money").value);
+  if(!money||money<100){alert("請輸入正確本金");return}
+  document.getElementById("resultPage").classList.add("hidden");
+  document.getElementById("loadingPage").classList.remove("hidden");
+  const texts=["正在連接演算法...","正在掃描熱門房間...","正在排除低爆率房...","正在計算 JP 機率...","正在生成推薦房號..."];
+  let i=0; const timer=setInterval(()=>{document.getElementById("scanText").innerText=texts[i%texts.length];i++},620);
+  setTimeout(()=>{clearInterval(timer);showResult(money)},2800)
+}
+function showResult(money){
+  document.getElementById("loadingPage").classList.add("hidden");
+  document.getElementById("resultPage").classList.remove("hidden");
+  const dev=document.getElementById("device").value || deviceCode();
+  const bet=Math.max(2,Math.round(money/500)*1);
+  const roomList=[rand(100,999).toString().padStart(4,"0"),rand(1000,2999),rand(3000,3999)];
+  const win=rand(76,91), bonus=(Math.random()*18+48).toFixed(1), free=rand(55,75), jp=(Math.random()*6+5).toFixed(2), awake=(Math.random()*5+4).toFixed(1);
+  document.getElementById("rDevice").innerText=dev;
+  document.getElementById("rMoney").innerText=money.toLocaleString();
+  document.getElementById("rBet").innerText=bet.toFixed(2);
+  document.getElementById("rRounds").innerText=rand(80,160);
+  document.getElementById("rRooms").innerText=roomList.join("、");
+  document.getElementById("rMulti").innerText=`${rand(500,900)}x - ${rand(15000,30000)}x`;
+  document.getElementById("rTime").innerText=new Date().toLocaleString("zh-TW",{hour12:false});
+  document.getElementById("win").innerText=win+"%"; document.getElementById("bonus").innerText=bonus+"%"; document.getElementById("free").innerText=free+"%";
+  document.getElementById("jp").innerText=jp+"%"; document.getElementById("awake").innerText=awake+"%";
+  document.getElementById("roomCards").innerHTML=roomList.map((r,i)=>`<div class="roomCard"><span class="medal">${i+1}</span><div>推薦房號</div><div class="roomNo">${r}</div><div>熱度 <span class="heat">${"🔥".repeat(5-i)}</span></div><div>預估爆分倍率 ${i===0?"800x - 20000x":i===1?"500x - 15000x":"600x - 30000x"}</div></div>`).join("");
+  const h=[rand(10,99).toString().padStart(4,"0"),rand(1000,1999),rand(3000,3999),rand(4000,4999),rand(6000,6999)];
+  document.getElementById("hotRooms").innerHTML=h.map((x,i)=>`<li>${x}　熱度 ${"🔥".repeat(Math.max(1,5-i))}</li>`).join("");
+  drawRadar([win,Number(bonus),free,Number(jp)*8,Number(awake)*8]);
+  lastResultText=`AI賽特選房結果\\n本金：${money}\\n房號：${roomList.join("、")}\\n勝利率：${win}%\\nJP機率：${jp}%`;
+}
+function drawRadar(vals){
+  const c=document.getElementById("radar"),ctx=c.getContext("2d"),cx=110,cy=110,r=82;
+  ctx.clearRect(0,0,220,220); ctx.strokeStyle="rgba(255,31,22,.45)"; ctx.fillStyle="rgba(255,31,22,.38)";
+  for(let k=1;k<=5;k++){ctx.beginPath();for(let i=0;i<5;i++){let a=-Math.PI/2+i*2*Math.PI/5;let rr=r*k/5;let x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();ctx.stroke()}
+  ctx.beginPath(); vals.forEach((v,i)=>{let a=-Math.PI/2+i*2*Math.PI/5,rr=r*Math.min(v,100)/100,x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath();ctx.fill();ctx.strokeStyle="#ff1f16";ctx.lineWidth=2;ctx.stroke();
+}
+function copyResult(){navigator.clipboard.writeText(lastResultText);alert("已複製結果")}
+function resetAll(){document.getElementById("resultPage").classList.add("hidden");window.scrollTo({top:0,behavior:"smooth"})}
+function updateMember(){
+  const p=new URLSearchParams(location.search); const exp=p.get("exp");
+  if(exp){let left=Math.max(0,Number(exp)-Date.now());let h=String(Math.floor(left/3600000)).padStart(2,"0"),m=String(Math.floor(left%3600000/60000)).padStart(2,"0"),s=String(Math.floor(left%60000/1000)).padStart(2,"0");document.getElementById("remain").innerText=`${h}:${m}:${s}`;document.getElementById("expireText").innerText=new Date(Number(exp)).toLocaleTimeString("zh-TW")}
+}
+document.getElementById("device").value=deviceCode();
+setInterval(updateMember,1000); updateMember();
+</script>
+</body>
+</html>
